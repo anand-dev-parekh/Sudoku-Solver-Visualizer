@@ -5,15 +5,10 @@ root = tkinter.Tk()
 root.title("Sudoku Solver")
 
 
-
-
-
-
-
 class Solver:
     def __init__(self, master):
         
-        
+        #Initializing objects
         self.cells = {}
         self.entries = []
         for row in range(1, 10):
@@ -22,7 +17,7 @@ class Solver:
                     color='gray20'
                 else:
                     color='gray80'
-                cell = tkinter.Frame(master, bg='white', highlightbackground=color, highlightcolor=color, highlightthickness=2, width=50, height=50, padx=3,  pady=3, background='black')
+                cell = tkinter.Frame(master, highlightbackground=color, highlightcolor=color, highlightthickness=2, width=50, height=50, padx=3,  pady=3, background='black')
                 cell.grid(row=row, column=column)
                 self.cells[(row, column)] = cell
 
@@ -32,55 +27,61 @@ class Solver:
                 
                 self.entries.append(e)
 
+        #Creates buttons 
+        topFrame = tkinter.Frame(master)
+        topFrame2 = tkinter.Frame(master)
+        topFrame3 = tkinter.Frame(master)
 
-        self.topFrame = tkinter.Frame(master)
-        self.topFrame2 = tkinter.Frame(master)
-        self.topFrame3 = tkinter.Frame(master)
 
-        self.solveButton = tkinter.Button(self.topFrame, text="SOLVE", command=self.solve)
-        self.solveButton.pack()
+        solveButton = tkinter.Button(topFrame, text="SOLVE", command=self.solve)
+        solveButton.pack()
         
 
-        self.visualButton = tkinter.Button(self.topFrame2, text="VISUAL", command=self.visualbacktrack)
-        self.visualButton.pack()
+        visualButton = tkinter.Button(topFrame2, text="VISUAL", command=self.visualbacktrack)
+        visualButton.pack()
 
 
-        self.resetButton = tkinter.Button(self.topFrame3, text="CLEAR", command=self.reset)
-        self.resetButton.pack()
+        resetButton = tkinter.Button(topFrame3, text="CLEAR", command=self.reset)
+        resetButton.pack()
 
-        self.topFrame.grid(column=5, row=0)
-        self.topFrame2.grid(column=4, row=0)
-        self.topFrame3.grid(column=6, row=0)
-
-
+        topFrame.grid(column=5, row=0)
+        topFrame2.grid(column=4, row=0)
+        topFrame3.grid(column=6, row=0)
 
 
-
+    #Converts user input into an array/python list
     def turnToList(self):
         outputList = []
+
         for row in range(9):
             nestedList = []
+
             for column in range(9):
+
                 if self.entries[column + (row * 9)].get() == "":
-                    nestedList.append("")
+                    nestedList.append(0)
                 else:
                     nestedList.append(int(self.entries[column + (row * 9)].get()))
+
             outputList.append(nestedList)
+
         return outputList
 
-
-
     #BACKTRACKING METHOD
-
-    def pickEmpty(self, inputBoard, slow):
+    def pickEmpty(self, inputBoard, vis):
         self.stack = deque()
         rowIndex = 0
         columnIndex = 0
+
         while rowIndex < 9:
             columnIndex = 0
+
             while columnIndex < 9:
-                if inputBoard[rowIndex][columnIndex] == '':
-                    index = self.trynum([rowIndex, columnIndex], 1, inputBoard, slow)
+                if inputBoard[rowIndex][columnIndex] == 0:
+                    
+                    #Trys to input num from 1-9
+                    index = self.trynum([rowIndex, columnIndex], 1, inputBoard, vis)
+                    
                     rowIndex = index[0]
                     columnIndex = index[1]
 
@@ -88,88 +89,98 @@ class Solver:
             rowIndex += 1
 
 
+    #If number does not exist in row, column, or square
+    def validInput(self, number, boardInput, indexes):
+        if (not self.inColumn(number, boardInput, indexes) and not self.inRow(number, boardInput, indexes) and not self.inSquare(number, boardInput, indexes)):
+            return True
+        return False
 
-    def sqaureIndex(self, indexes, daboard):
 
-        if indexes[0] >= 0 and indexes[0] < 3:
-            if indexes[1] >= 0 and indexes[1] < 3:
-                return [daboard[0][0], daboard[0][1], daboard[0][2], daboard[1][0], daboard[1][1], daboard[1][2], daboard[2][0], daboard[2][1], daboard[2][2]]
-            elif indexes[1] >= 3 and indexes[1] < 6:
-                return [daboard[0][3], daboard[0][4], daboard[0][5], daboard[1][3], daboard[1][4], daboard[1][5], daboard[2][3], daboard[2][4], daboard[2][5]]
-            else:
-                return [daboard[0][6], daboard[0][7], daboard[0][8], daboard[1][6], daboard[1][7], daboard[1][8], daboard[2][6], daboard[2][7], daboard[2][8]]
+    #HELPER FUNCTIONS FOR validInput
 
-        elif indexes[0] >= 3 and indexes[0] < 6:
-            if indexes[1] >= 0 and indexes[1] < 3:
-                return [daboard[3][0], daboard[3][1], daboard[3][2], daboard[4][0], daboard[4][1], daboard[4][2], daboard[5][0], daboard[5][1], daboard[5][2]]
-            elif indexes[1] >= 3 and indexes[1] < 6:
-                return [daboard[3][3], daboard[3][4], daboard[3][5], daboard[4][3], daboard[4][4], daboard[4][5], daboard[5][3], daboard[5][4], daboard[5][5]]
-            else:
-                return [daboard[3][6], daboard[3][7], daboard[3][8], daboard[4][6], daboard[4][7], daboard[4][8], daboard[5][6], daboard[5][7], daboard[5][8]]
+    #If number exists in its row
+    def inRow(self, number, boardInput, indexes):
+        for num in boardInput[indexes[0]]:
+            if number == num:
+                return True
+        return False
+    
+    #If number exists in its column
+    def inColumn(self, number, boardInput, indexes):
+        for row in boardInput:
+            if row[indexes[1]] == number:
+                return True
+        return False 
+    
+    #If number exists in the square of it self
+    def inSquare(self, number, boardInput, indexes):
+        botX = (indexes[0] // 3) * 3
+        topX = ((indexes[0] // 3) * 3) + 3
+                  
+        botY = (indexes[1] // 3) * 3
+        topY = ((indexes[1] // 3) * 3) + 3
 
-        else:
-            if indexes[1] >= 0 and indexes[1] < 3:
-                return [daboard[6][0], daboard[6][1], daboard[6][2], daboard[7][0], daboard[7][1], daboard[7][2], daboard[8][0], daboard[8][1], daboard[8][2]]
-            elif indexes[1] >= 3 and indexes[1] < 6:
-                return [daboard[6][3], daboard[6][4], daboard[6][5], daboard[7][3], daboard[7][4], daboard[7][5], daboard[8][3], daboard[8][4], daboard[8][5]]
-            else:
-                return [daboard[6][6], daboard[6][7], daboard[6][8], daboard[7][6], daboard[7][7], daboard[7][8], daboard[8][6], daboard[8][7], daboard[8][8]]
-
+        for x in range(botX, topX):
+            for y in range(botY, topY):
+                if boardInput[x][y] == number:
+                    return True
+        return False
+    #END HELPER FUNCTIONS FOR 
 
     def trynum(self, indexes, start, boardInput, visual):
         
         for number in range(start, 10):
-            if number not in set(boardInput[indexes[0]]) and number not in set([x[indexes[1]] for x in boardInput]) and number not in set(self.sqaureIndex(indexes, boardInput)):
+            if self.validInput(number, boardInput, indexes):
+                
                 boardInput[indexes[0]][indexes[1]] = number
 
-
-
-
+                #Updates color change if visual
                 if visual:
                     self.entries[(indexes[0] * 9 + indexes[1])].configure(foreground="red", highlightbackground="green")
                     self.entries[(indexes[0] * 9 + indexes[1])].insert(0, number)
                     root.update()
                     self.entries[(indexes[0] * 9 + indexes[1])].configure(foreground="red", highlightbackground="white")
-
+                
                 else:
                     self.entries[(indexes[0] * 9 + indexes[1])].configure(foreground="red")
                     self.entries[(indexes[0] * 9 + indexes[1])].insert(0, number)
                 
 
-
-
                 self.stack.append(indexes)
+
                 return indexes
+
         return self.backtrack(boardInput, visual)
 
 
-    def backtrack(self, boardinp, slow):
+    def backtrack(self, boardinp, vis):
         lastWrong = self.stack.pop()
+        
+        #Stores previous wrong value
         prevVal = boardinp[lastWrong[0]][lastWrong[1]]
-        boardinp[lastWrong[0]][lastWrong[1]] = ''
-
-
+        
+        #Resets last wrong to 0 + deltes from GUI
+        boardinp[lastWrong[0]][lastWrong[1]] = 0
         self.entries[lastWrong[0] * 9 + lastWrong[1]].delete(0, tkinter.END)
 
-        return self.trynum(lastWrong, prevVal + 1, boardinp, slow)
+        return self.trynum(lastWrong, prevVal + 1, boardinp, vis)
     #END BACKTRACK 
 
 
-    def isvalid(self, userBoard):
+    def isBoardValid(self, userBoard):
         return True
 
-
-
+    #Normal Solve
     def solve(self):
-        if self.isvalid("Not Finished"):
+        if self.isBoardValid("Not Finished"):
             self.pickEmpty(self.turnToList(), False)
 
-
+    #Visual Solve
     def visualbacktrack(self):
-        if self.isvalid("Not Finished"):
+        if self.isBoardValid("Not Finished"):
             self.pickEmpty(self.turnToList(), True)
 
-
+    #Reset Board
     def reset(self):
         for value in self.entries:
             value.delete(0, tkinter.END)
@@ -181,4 +192,3 @@ ye = Solver(root)
 
 
 root.mainloop() 
-
