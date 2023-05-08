@@ -2,7 +2,7 @@
 Sudoku Solver Visualizer GUI made with python. The algorithim uses backtracking which you can visualize using this GUI! 
 
 
-The GUI has 3 buttons: Solve, Visual, and Quit. 
+#### The GUI has 3 buttons: Solve, Visual, and Quit. 
 
 Solve: The solve button converts the inputted sudoku into a array, and solves the array THEN displays the solved array. This makes the solve button much faster in comparison to the visual button. 
 
