@@ -9,3 +9,6 @@ Solve: The solve button converts the inputted sudoku into a array, and solves th
 Visual: The visual button converts the inputted sudoku into a array, however in each step of the backtracking algorithim (lots of steps) the GUI updates. The Visual button looks really cool as you get to visualize the backtracking algorithim, however, is much slower since you have to update the GUI at each step in the algorithim.
 
 Quit: Exits the application
+
+
+#### Demo: https://www.youtube.com/watch?v=OKcCGMqzuOw&t=9s
